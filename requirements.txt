@@ -1,0 +1,2 @@
+plotly
+pandas==1.0.0
