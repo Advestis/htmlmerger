@@ -31,7 +31,8 @@ jobs:
 
       - name: build
         run: |
-          make install
+          python setup.py sdist
+          pip install -r requirements.txt
 
       - name: commit version
         run: |
