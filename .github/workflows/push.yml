@@ -78,6 +78,7 @@ jobs:
           verbose: true
 
       - name: todocker
+        if: ${{ matrix.python-version == 3.8 }}
         uses: docker/build-push-action@v1
         with:
           username: ${{ secrets.docker_login }}
