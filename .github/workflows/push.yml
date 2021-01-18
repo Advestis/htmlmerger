@@ -69,6 +69,7 @@ jobs:
           force: true
 
       - name: topypi
+        if: ${{ matrix.python-version == 3.8 }}
         uses: pypa/gh-action-pypi-publish@master
         with:
           user: ${{ secrets.pypi_login }}
