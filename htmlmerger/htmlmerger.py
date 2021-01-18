@@ -88,6 +88,8 @@ class HtmlMerger:
         if not self.output_path.parent.is_dir():
             raise NotADirectoryError(f"Output directory {self.output_path.parent} not found.")
 
+        self.files = [f for f in self.files if str(f) != str(self.output_path)]
+
     def get_contents(self):
         first = True
         for file in self.files:
