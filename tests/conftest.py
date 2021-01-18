@@ -1,4 +1,6 @@
 import pytest
+from pathlib import Path
+
 
 @pytest.fixture
 def fix1(pytestconfig):
@@ -7,6 +9,9 @@ def fix1(pytestconfig):
     name = pytestconfig.getoption("name")
     # do something before each test function
     yield name
+    p = Path("tests/data/merged.html")
+    if p.is_file():
+        p.unlink()
     # do something after each test function
 
 
