@@ -76,12 +76,3 @@ jobs:
           password: ${{ secrets.pypi_passwd }}
           skip_existing: true
           verbose: true
-
-      - name: todocker
-        if: ${{ matrix.python-version == 3.8 }}
-        uses: docker/build-push-action@v1
-        with:
-          username: ${{ secrets.docker_login }}
-          password: ${{ secrets.docker_passwd }}
-          repository: advestisrepositories/${{ env.REPO_NAME }}
-          tag_with_ref: true
