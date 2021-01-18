@@ -130,4 +130,5 @@ class HtmlMerger:
 
     def clean_files(self):
         for file in self.files:
-            file.rm()
+            if file.is_file():
+                file.unlink()
