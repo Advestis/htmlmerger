@@ -1,4 +1,3 @@
-import transparentpath
 from pathlib import Path
 from typing import List, Union, Generator
 
@@ -34,27 +33,25 @@ class HtmlMerger:
     def __init__(
         self,
         files: Union[
-            List[Union[Path, transparentpath.TransparentPath, str]],
+            List[Union[Path, str]],
             Generator[Path, None, None],
             Generator[str, None, None],
-            Generator[transparentpath.TransparentPath, None, None],
         ] = None,
-        input_directory: Union[transparentpath.TransparentPath, str] = None,
-        output_path: Union[transparentpath.TransparentPath, str] = transparentpath.TransparentPath(""),
+        input_directory: Union[Path, str] = None,
+        output_path: Union[Path, str] = Path(""),
     ):
         """
         Parameters
         ----------
         files: Union[
-            List[Union[Path, transparentpath.TransparentPath, str]],
+            List[Union[Path, str]],
             Generator[Path],
             Generator[str],
-            Generator[transparentpath.TransparentPath],
         ]
             List or Generator of html files to merge (default value = None).
-        input_directory: Union[transparentpath.TransparentPath, str]
+        input_directory: Union[Path, str]
             Directory containing html files to merge. Alternative to "files" (default value = None).
-        output_path: Union[transparentpath.TransparentPath, str]
+        output_path: Union[Path, str]
             File in which to save the merged html. (default value = "./merged.html").
         """
         self.files = files
@@ -68,10 +65,10 @@ class HtmlMerger:
 
     def check_args(self):
 
-        if not isinstance(self.input_directory, transparentpath.TransparentPath) and self.input_directory is not None:
-            self.input_directory = transparentpath.TransparentPath(self.input_directory)
-        if not isinstance(self.output_path, transparentpath.TransparentPath) and self.output_path is not None:
-            self.output_path = transparentpath.TransparentPath(self.output_path)
+        if not isinstance(self.input_directory, Path) and self.input_directory is not None:
+            self.input_directory = Path(self.input_directory)
+        if not isinstance(self.output_path, Path) and self.output_path is not None:
+            self.output_path = Path(self.output_path)
 
         if self.files is None and self.input_directory is None:
             raise AttributeError("Need to specify files or input directory")
@@ -79,13 +76,14 @@ class HtmlMerger:
         if self.input_directory is not None:
             if self.files:
                 raise ValueError("Can not specify both input directory and input files")
-            self.files = self.input_directory.glob("/*.html")
+            self.files = list(self.input_directory.glob("*.html"))
+            self.files.sort()
         
-        self.files = [f if not isinstance(f, str) or type(f) == transparentpath.TransparentPath else Path(f) for f in 
+        self.files = [f if not isinstance(f, str) or type(f) == Path else Path(f) for f in
                       self.files]
 
         if self.output_path is None:
-            self.output_path = transparentpath.TransparentPath("merged.html")
+            self.output_path = Path("merged.html")
 
         if not self.output_path.parent.is_dir():
             raise NotADirectoryError(f"Output directory {self.output_path.parent} not found.")
@@ -94,7 +92,6 @@ class HtmlMerger:
         first = True
         for file in self.files:
             for line in file.read_text().splitlines():
-                print(line)
                 if line.startswith("<html>") or line.startswith("<body>") or line.startswith("<head>"):
                     if first:
                         if self.header == "":
