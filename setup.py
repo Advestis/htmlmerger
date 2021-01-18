@@ -5,11 +5,11 @@ from typing import List
 from setuptools import find_packages, setup
 
 
-name = Path(__file__).absolute().parent.stem
+name = "htmlmerger"
 author = "Philippe COTTE"
 author_email = "pcotte@advestis.com"
 description = "A package allowing to merge all html files in a directory in a single file."
-url = f"https://github.com/Advestis/{name}"
+url = f"https://github.com/Advestis/htmlmerger"
 
 
 def run_cmd(cmd):
@@ -96,7 +96,7 @@ except FileNotFoundError as e:
 
 if __name__ == "__main__":
     setup(
-        name=name,
+        name="htmlmerger",
         version=version,
         author=author,
         author_email=author_email,
