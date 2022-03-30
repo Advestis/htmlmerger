@@ -1,13 +1,15 @@
 import subprocess
 from pathlib import Path
 from typing import List
+import sys
 
 from setuptools import find_packages, setup
 
+workdir = Path(__file__).parent
 
 name = "htmlmerger"
-author = "Philippe COTTE"
-author_email = "pcotte@advestis.com"
+author = "Advestis"
+author_email = "pythondev@advestis.com"
 description = "A package allowing to merge all html files in a directory in a single file."
 url = f"https://github.com/Advestis/htmlmerger"
 
@@ -38,7 +40,7 @@ def get_greatest_version(versions: List[str]) -> str:
                     break
             if not lower:
                 greatest = v
-    return f"v{'.'.join([str(s) for s in greatest])}"
+    return f"v{'.'.join([str(s_) for s_ in greatest])}"
 
 
 def get_last_tag() -> str:
@@ -58,83 +60,63 @@ def get_version() -> str:
     return f"{'.'.join(last_tag.split('.'))}.{get_nb_commits_until(last_tag)}"
 
 
+git_installed = subprocess.call('command -v git >> /dev/null', shell=True)
+
 try:
-    long_description = Path("README.md").read_text()
+    long_description = (workdir / "README.md").read_text()
 except UnicodeDecodeError:
-    with open("README.md", "rb") as ifile:
+    with open(str(workdir / "README.md"), "rb") as ifile:
         lines = [line.decode("utf-8") for line in ifile.readlines()]
         long_description = "".join(lines)
 
-optional_requirements = {}
-requirements = []
-all_reqs = []
+requirements = (workdir / "requirements.txt").read_text().splitlines()
 
-for afile in Path("").glob("*requirements.txt"):
-    if str(afile) == "requirements.txt":
-        requirements = afile.read_text().splitlines()
-        all_reqs = list(set(all_reqs) | set(afile.read_text().splitlines()))
-    else:
-        option = afile.stem.replace("-requirements", "")
-        optional_requirements[option] = afile.read_text().splitlines()
-        all_reqs = list(set(all_reqs) | set(optional_requirements[option]))
-
-if len(optional_requirements) > 0:
-    optional_requirements["all"] = all_reqs
-
-try:
-    version = get_version()
-    with open("VERSION.txt", "w") as vfile:
-        vfile.write(version)
-except FileNotFoundError as e:
-    # noinspection PyBroadException
+version = None
+if git_installed == 0:
     try:
-        with open("VERSION.txt", "r") as vfile:
-            version = vfile.readline()
-    except Exception:
-        version = None
+        version = get_version()
+        with open(str(workdir / name / "_version.py"), "w") as vfile:
+            vfile.write(f"__version__ = \"{version}\"")
+    except FileNotFoundError as e:
+        pass
+if version is None:
+    # noinspection PyBroadException
+    with open(str(workdir / name / "_version.py"), "r") as vfile:
+        version = vfile.readline().split("= ")[-1]
+
+if "v" in version:
+    version = version.replace("v", "")
+if "-" in version:
+    version = version.replace("-", "")
+if "\"" in version:
+    version = version.replace("\"", "")
 
 
 if __name__ == "__main__":
+
+    if sys.argv[1] == "version":
+        exit(0)
+
     setup(
-        name="htmlmerger",
+        name=name,
         version=version,
         author=author,
         author_email=author_email,
+        url=url,
+        packages=find_packages(exclude=("tests*",)),
         include_package_data=True,
         description=description,
         long_description=long_description,
         long_description_content_type="text/markdown",
-        url=url,
-        packages=find_packages(),
         install_requires=requirements,
         package_data={"": ["*", ".*"]},
-        extras_require=optional_requirements,
         classifiers=[
-            "Programming Language :: Python :: 3",
+            "Programming Language :: Python :: 3.7",
+            "Programming Language :: Python :: 3.8",
+            "Programming Language :: Python :: 3.9",
             "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-            "Operating System :: OS Independent",
+            "Operating System :: Unix",
             "Development Status :: 5 - Production/Stable"
         ],
-        python_requires='>=3.6',
+        python_requires='>=3.7',
     )
-
-    if Path("apt-requirements.txt").is_file():
-        apt_requirements = Path("apt-requirements.txt").read_text().splitlines()
-        print("WARNING: Found apt-requirements.txt. You will have to install by hand its content :")
-        for line in apt_requirements:
-            print(" - ", line)
-        print("If you are using Linux, you can use apt-get install or equivalent to install those packages. Else,"
-              "download and install them according to your OS.")
-        print("If you are using Linux and used install.sh to install this package, you can ignore this message,"
-              "the requirements have been installed.")
-
-    if Path("gspip-requirements.txt").is_file():
-        gspip_requirements = Path("gspip-requirements.txt").read_text().splitlines()
-        print("WARNING: Found gspip-requirements.txt. You will have to install from gcs its content :")
-        for line in gspip_requirements:
-            print(" - ", line)
-        print("If you are using Linux, install and use gspip from https://github.com/Advestis/gspip. On windows,"
-              "you will have to download by hand the latest version of the required packages on"
-              " gs://pypi_server_sand/package_name")
-        print("If you are using Linux and used install.sh to install this package, you can ignore this message,"
-              "the requirements have been installed.")
