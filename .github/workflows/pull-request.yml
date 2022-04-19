@@ -2,11 +2,40 @@ on:
   pull_request:
     branches:
       - master
-      - main
+
+concurrency:
+  group: pytests
+  cancel-in-progress: true
 
 name: pytests
 jobs:
+
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: 8BitJonny/gh-get-current-pr@2.0.0
+        id: PR
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Verbose setting SHA when using Pull_Request event trigger to fix #16
+          sha: ${{ github.event.pull_request.head.sha }}
+          # Only return if PR is still open
+          filterOutClosed: true
+          # Only return if PR is not in draft state
+          filterOutDraft: 1
+
+      - name: Check PR message
+        id: check
+        run: |
+          message=$(echo ${{ steps.PR.outputs.pr_body }})
+          echo "Message is $message"
+          if [[ "$message" == "" ]] ; then
+            echo "Pull request message not provided!!"
+            exit 1
+          fi
+
   pytest:
+    needs: check
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -24,16 +53,19 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - uses: actions/cache@v2
+        with:
+          path: ${{ env.pythonLocation }}
+          key: ${{ env.pythonLocation }}-${{ hashFiles('setup.cfg') }}
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install wheel
-          pip install pytest
-          # Required for pytests
-          pip install pandas
-          pip install pytest-gitignore
-          pip install pytest-github-actions-annotate-failures
-          pip install .
+          pip install --upgrade --upgrade-strategy eager wheel
+          pip install --upgrade --upgrade-strategy eager pytest
+          pip install --upgrade --upgrade-strategy eager pytest-gitignore
+          pip install --upgrade --upgrade-strategy eager pytest-github-actions-annotate-failures
+          pip install --upgrade --upgrade-strategy eager .
 
       - name: Test with pytest
         run: |
