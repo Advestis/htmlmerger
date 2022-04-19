@@ -58,10 +58,10 @@ jobs:
           python setup.py version
           python setup.py sdist
 
-#      - name: topypi
-#        uses: pypa/gh-action-pypi-publish@master
-#        with:
-#          user: ${{ secrets.ORG_PYPI_LOGIN }}
-#          password: ${{ secrets.ORG_PYPI_PASSWD }}
-#          skip_existing: true
-#          verbose: true
+     - name: topypi
+       uses: pypa/gh-action-pypi-publish@master
+       with:
+         user: ${{ secrets.ORG_PYPI_LOGIN }}
+         password: ${{ secrets.ORG_PYPI_PASSWD }}
+         skip_existing: true
+         verbose: true
