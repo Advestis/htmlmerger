@@ -38,7 +38,7 @@ class HtmlMerger:
             Generator[str, None, None],
         ] = None,
         input_directory: Union[Path, str] = None,
-        output_path: Union[Path, str] = Path(""),
+        output_file: Union[Path, str] = Path("merged.html"),
     ):
         """
         Parameters
@@ -51,12 +51,12 @@ class HtmlMerger:
             List or Generator of html files to merge (default value = None).
         input_directory: Union[Path, str]
             Directory containing html files to merge. Alternative to "files" (default value = None).
-        output_path: Union[Path, str]
+        output_file: Union[Path, str]
             File in which to save the merged html. (default value = "./merged.html").
         """
         self.files = files
         self.input_directory = input_directory
-        self.output_path = output_path
+        self.output_file = output_file
         self.header = ""
         self.tail = ""
         self.contents = {}
@@ -67,8 +67,8 @@ class HtmlMerger:
 
         if not isinstance(self.input_directory, Path) and self.input_directory is not None:
             self.input_directory = Path(self.input_directory)
-        if not isinstance(self.output_path, Path) and self.output_path is not None:
-            self.output_path = Path(self.output_path)
+        if not isinstance(self.output_file, Path) and self.output_file is not None:
+            self.output_file = Path(self.output_file)
 
         if self.files is None and self.input_directory is None:
             raise AttributeError("Need to specify files or input directory")
@@ -82,13 +82,13 @@ class HtmlMerger:
         self.files = [f if not isinstance(f, str) or type(f) == Path else Path(f) for f in
                       self.files]
 
-        if self.output_path is None:
-            self.output_path = Path("merged.html")
+        if self.output_file is None:
+            self.output_file = Path("merged.html")
 
-        if not self.output_path.parent.is_dir():
-            raise NotADirectoryError(f"Output directory {self.output_path.parent} not found.")
+        if not self.output_file.parent.is_dir():
+            raise NotADirectoryError(f"Output directory {self.output_file.parent} not found.")
 
-        self.files = [f for f in self.files if str(f) != str(self.output_path)]
+        self.files = [f for f in self.files if str(f) != str(self.output_file)]
 
     def get_contents(self):
         first = True
@@ -122,7 +122,7 @@ class HtmlMerger:
 
         if not self.loaded:
             self.get_contents()
-        with open(self.output_path, "w") as ofile:
+        with open(self.output_file, "w") as ofile:
             ofile.write(f"{self.header}\n")
             for name in self.contents:
                 ofile.write(f"{self.contents[name]}\n")
