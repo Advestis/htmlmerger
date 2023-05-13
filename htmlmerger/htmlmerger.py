@@ -39,6 +39,7 @@ class HtmlMerger:
         ] = None,
         input_directory: Union[Path, str] = None,
         output_file: Union[Path, str] = Path("merged.html"),
+        encoding: str = None
     ):
         """
         Parameters
@@ -53,10 +54,14 @@ class HtmlMerger:
             Directory containing html files to merge. Alternative to "files" (default value = None).
         output_file: Union[Path, str]
             File in which to save the merged html. (default value = "./merged.html").
+        encoding: str
+            Encoding is the name of the encoding used to decode or encode the files.
+            The default encoding is platform dependent. (default value = None)
         """
         self.files = files
         self.input_directory = input_directory
         self.output_file = output_file
+        self.encoding = encoding
         self.header = ""
         self.tail = ""
         self.contents = {}
@@ -93,7 +98,7 @@ class HtmlMerger:
     def get_contents(self):
         first = True
         for file in self.files:
-            for line in file.read_text().splitlines():
+            for line in file.read_text(encoding=self.encoding).splitlines():
                 if line.startswith("<html>") or line.startswith("<body>") or line.startswith("<head>"):
                     if first:
                         if self.header == "":
@@ -122,7 +127,7 @@ class HtmlMerger:
 
         if not self.loaded:
             self.get_contents()
-        with open(self.output_file, "w") as ofile:
+        with open(self.output_file, "w", encoding=self.encoding) as ofile:
             ofile.write(f"{self.header}\n")
             for name in self.contents:
                 ofile.write(f"{self.contents[name]}\n")
